@@ -43,7 +43,7 @@ jobs:
           curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin v1.4.0
       # Generate SBOM for Python
       - name: Generate SBOM for Python
-        run: syft python:python-project -o cyclonedx-json > sbom-python.json
+        run: syft python-project -o cyclonedx-json > sbom-python.json
       # Generate SBOM for React (Node.js)
       - name: Generate SBOM for React
         run: syft dir:. -o cyclonedx-json > sbom-react.json
