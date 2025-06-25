@@ -1,0 +1,58 @@
+name: Release Build and SBOM
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-sbom:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Python build
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install Python dependencies
+        working-directory: python-project
+        run: |
+          python -m pip install --upgrade pip
+          pip install .
+      - name: Build Python package
+        working-directory: python-project
+        run: |
+          pip install build
+          python -m build
+
+      # React build
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '16'
+      - name: Install React dependencies
+        run: npm install
+      - name: Build React app
+        run: npm run build
+
+      # Install Syft
+      - name: Install Syft
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin v1.4.0
+      # Generate SBOM for Python
+      - name: Generate SBOM for Python
+        run: syft python:python-project -o cyclonedx-json > sbom-python.json
+      # Generate SBOM for React (Node.js)
+      - name: Generate SBOM for React
+        run: syft dir:. -o cyclonedx-json > sbom-react.json
+
+      # Optionally upload SBOMs as artifacts
+      - name: Upload SBOMs
+        uses: actions/upload-artifact@v4
+        with:
+          name: sboms
+          path: |
+            sbom-python.json
+            sbom-react.json
