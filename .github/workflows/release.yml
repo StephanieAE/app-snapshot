@@ -37,16 +37,28 @@ jobs:
       - name: Build React app
         run: npm run build
 
-      # Install Syft
-      - name: Install Syft
+      # Install Trivy
+      - name: Install Trivy
         run: |
-          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin v1.4.0
+          sudo apt-get update && sudo apt-get install -y wget
+          wget -qO- https://github.com/aquasecurity/trivy/releases/latest/download/trivy_0.51.1_Linux-64bit.tar.gz | tar zxvf -
+          sudo mv trivy /usr/local/bin/
+      # Install Syft
+        # - name: Install Syft
+      #   run: |
+      #     curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin v1.4.0
       # Generate SBOM for Python
       - name: Generate SBOM for Python
-        run: syft python-project -o cyclonedx-json > sbom-python.json
+        run: trivy sbom --format cyclonedx --output sbom-python.json python-project
+      #  Syft SBOM for Python
+      # - name: Generate SBOM for Python (Syft)
+      #   run: syft python-project -o cyclonedx-json > sbom-python.json
       # Generate SBOM for React (Node.js)
       - name: Generate SBOM for React
-        run: syft dir:. -o cyclonedx-json > sbom-react.json
+        run: trivy sbom --format cyclonedx --output sbom-react.json .
+      #  Syft SBOM for React
+      # - name: Generate SBOM for React (Syft)
+      #   run: syft dir:. -o cyclonedx-json > sbom-react.json
 
       # Optionally upload SBOMs as artifacts
       - name: Upload SBOMs
