@@ -52,6 +52,13 @@ jobs:
       - name: Generate SBOM for React
         run: trivy sbom --format cyclonedx --output sbom-react.json .
 
+      # Build Docker image for React app
+      - name: Build React Docker image
+        run: docker build -t react-app:latest .
+      # Generate SBOM for React Docker image (Trivy)
+      - name: Generate SBOM for React Docker image
+        run: trivy sbom --format cyclonedx --output sbom-react-image.json react-app:latest
+
       # Optionally upload SBOMs as artifacts
       - name: Upload SBOMs
         uses: actions/upload-artifact@v4
@@ -60,3 +67,4 @@ jobs:
           path: |
             sbom-python.json
             sbom-react.json
+            sbom-react-image.json
